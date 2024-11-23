@@ -1,0 +1,20 @@
+[27-Dec-2023 08:47:53 America/Sao_Paulo] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home2/mulheresapp/public_html/sistema/design1.php:6
+Stack trace:
+#0 /home2/mulheresapp/public_html/sistema/index.php(15): include()
+#1 {main}
+  thrown in /home2/mulheresapp/public_html/sistema/design1.php on line 6
+[27-Dec-2023 11:14:37 America/Sao_Paulo] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home2/mulheresapp/public_html/sistema/design1.php:6
+Stack trace:
+#0 /home2/mulheresapp/public_html/sistema/index.php(15): include()
+#1 {main}
+  thrown in /home2/mulheresapp/public_html/sistema/design1.php on line 6
+[31-Dec-2023 07:53:52 America/Sao_Paulo] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home2/mulheresapp/public_html/sistema/design1.php:6
+Stack trace:
+#0 /home2/mulheresapp/public_html/sistema/index.php(15): include()
+#1 {main}
+  thrown in /home2/mulheresapp/public_html/sistema/design1.php on line 6
+[31-Dec-2023 12:28:37 America/Sao_Paulo] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home2/mulheresapp/public_html/sistema/design1.php:6
+Stack trace:
+#0 /home2/mulheresapp/public_html/sistema/index.php(15): include()
+#1 {main}
+  thrown in /home2/mulheresapp/public_html/sistema/design1.php on line 6
