@@ -1,12 +1,34 @@
 <?php
-//ini_set('display_errors', 0);
-//ini_set('display_startup_errors', 0);
-//error_reporting(0); //E_ALL
-
 include("config.php");
 include("acesso.php");
 include("arovim/funcoes.php");
 include("includes/canvas.php");
+
+// Verificar se o usuário está logado
+if (!isset($_SESSION['id'])) {
+    // Redireciona para a página de login ou exibe uma mensagem de erro
+    header("Location: login.php");
+    exit();
+}
+
+// Verificar se a chave is_admin está definida na sessão
+$isAdmin = isset($_SESSION['is_admin']) ? $_SESSION['is_admin'] : false;
+
+if (isset($_GET['codigo'])) {
+    $codigo = $_GET['codigo'];
+    $usuarioId = $_SESSION['id'];
+
+    // Consultar o criador do atendimento
+    $consultaPermissao = $MySQLi->query("SELECT ate_tec_codigo1 FROM tb_atendimentos WHERE ate_mul_codigo = $codigo");
+    $resultadoPermissao = $consultaPermissao->fetch_assoc();
+
+    // Verificar se o usuário é o criador do atendimento ou administrador
+    if ($resultadoPermissao['ate_tec_codigo1'] != $usuarioId && !$isAdmin) {
+        // Se não for o criador nem administrador, redireciona ou exibe uma mensagem de erro
+        header("Location: sem-permissao.php"); // Redireciona para uma página de acesso negado
+        exit();
+    }
+}
 
 // Variáveis para definição antes de incluir o design1.php class="nav-link active"
 
@@ -2578,6 +2600,5 @@ include("design2.php");
   
   
 </script>
-
 
 
