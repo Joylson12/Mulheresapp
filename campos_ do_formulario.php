@@ -3,7 +3,7 @@ include("config.php");
 include("acesso.php");
 // Variáveis para definição antes de incluir o design1.php class="nav-link active"
 
-$design_titulo = "Configurações do Usuário";
+$design_titulo = "Campos de Formulários";
 $design_ativo = "m12"; // coloca o class="nav-link active" no menu correto
 $design_migalha1_texto = "Configurações";
 $design_migalha1_link = "";
