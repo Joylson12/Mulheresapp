@@ -12,6 +12,60 @@ $design_migalha2_texto = "Acompanhar";
 $design_migalha2_link = "";
 
 ?>
+<?php
+if (isset($_GET['export_excel'])) {
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=acompanhamento.xls");
+    echo "<table border='1'>";
+    echo "<tr>
+            <th>Data</th>
+            <th>Técnico</th>
+            <th>Relatório</th>
+          </tr>";
+    // Substitua pelo seu código para buscar dados do banco
+    $consulta2 = $MySQLi->query("SELECT aco_data, tec_apelido, aco_relatorio 
+                                FROM tb_acompanhamento_abrigamentos 
+                                JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo");
+    while ($linha = $consulta2->fetch_assoc()) {
+        echo "<tr>
+                <td>" . date("d/m/Y H:i", strtotime($linha['aco_data'])) . "</td>
+                <td>" . htmlspecialchars($linha['tec_apelido']) . "</td>
+                <td>" . htmlspecialchars($linha['aco_relatorio']) . "</td>
+              </tr>";
+    }
+    echo "</table>";
+    exit();
+}
+
+require('fpdf.php');
+
+if (isset($_GET['export_pdf'])) {
+  $pdf = new FPDF();
+  $pdf->AddPage();
+  $pdf->SetFont('Arial', 'B', 16);
+  $pdf->Cell(0, 10, 'Historico de Acompanhamento', 0, 1, 'C');
+  $pdf->SetFont('Arial', '', 12);
+  $pdf->Cell(50, 10, 'Data', 1);
+  $pdf->Cell(50, 10, 'Tecnico', 1);
+  $pdf->Cell(90, 10, 'Relatorio', 1);
+  $pdf->Ln();
+  // Consultando os dados para PDF
+  $consulta2 = $MySQLi->query("SELECT aco_data, tec_apelido, aco_relatorio 
+                              FROM tb_acompanhamento_abrigamentos 
+                              JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo");
+  while ($linha = $consulta2->fetch_assoc()) {
+      $pdf->Cell(50, 10, date("d/m/Y H:i", strtotime($linha['aco_data'])), 1);
+      $pdf->Cell(50, 10, $linha['tec_apelido'], 1);
+      $pdf->Cell(90, 10, $linha['aco_relatorio'], 1);
+      $pdf->Ln();
+  }
+  $pdf->Output('D', 'acompanhamento.pdf'); // Força o download
+  exit();
+}
+
+
+
+?>
 
 <?php include("design1.php");
 if (isset($_POST['password'])) {
@@ -264,7 +318,8 @@ $tecnico = $_SESSION['id'];
                 ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
               });
             </script>
-
+            <a href="?export_excel=true" class="btn btn-success">Exportar para Excel</a>
+            <a href="?export_pdf=true" class="btn btn-success">Exportar para PDF</a>
           </div>
           <!-- /.col -->
         </div>
