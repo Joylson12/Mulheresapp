@@ -1,0 +1,212 @@
+<?php
+session_start();
+?>
+<?php require_once('includes/config.php'); ?>
+<?php
+	$visTables =  split(",",$dbVisTables);
+	if (count($visTables)==1) {
+		if ($visTables[0]!=""){
+			$_SESSION['selectedTables'] = "`" . $visTables[0] . "`";
+			header("Location:selectFields.php");
+		}
+	}
+?>
+<?php
+mysql_select_db($database_connDB, $connDB);
+$query_recGetTables = "SHOW TABLES";
+$recGetTables = mysql_query($query_recGetTables, $connDB) or die(mysql_error());
+$row_recGetTables = mysql_fetch_array($recGetTables);
+$totalRows_recGetTables = mysql_num_rows($recGetTables);
+
+$design_titulo = "Relatórios";
+$design_ativo = "r3"; // coloca o class="nav-link active" no menu correto
+$design_migalha1_texto = "Relatórios";
+$design_migalha1_link = "index.php";
+$design_migalha2_texto = "Editar: Parte 1";
+$design_migalha2_link = "";
+
+ include("design1.php");
+?>
+
+<script language="javascript" type="text/javascript">
+var lstAllTables;
+var lstTables;
+var selectedTables;
+var cmdNext;
+
+function initVars() {
+	lstAllTables = document.getElementById("lstAllTables");
+	lstTables = document.getElementById("lstTables");
+	selectedTables = document.getElementById("selectedTables");
+	cmdNext = document.getElementById("cmdNext");
+}
+
+function cmdSelectTables_onclick() {
+   	var addIndex = lstAllTables.selectedIndex;
+   	if(addIndex < 0)
+      return;
+	  
+	for (i = 0; i < lstAllTables.options.length; i++) {
+		if (lstAllTables.options[i].selected) {
+
+			var tmpFound = 0;
+			for (var x = 0; x <= ((lstTables.options.length)-1); x++)
+			{
+				if (lstTables.options[x].value == lstAllTables.options[i].value) {
+					tmpFound = 1;
+				}
+			}
+
+			if (tmpFound!=1){
+				newOption = document.createElement('option');
+				newText = document.createTextNode(lstAllTables.options[i].value);
+				
+				newOption.appendChild(newText);
+				newOption.setAttribute("value",lstAllTables.options[i].value);
+			
+				lstTables.appendChild(newOption);
+				
+				updateTables();
+				cmdNext.disabled=false;
+			}
+			
+		} 
+	}
+}
+
+function cmdRemoveTables_onclick() {
+	var selIndex = lstTables.selectedIndex;
+	var itemCount = lstTables.options.length;
+	   if(selIndex < 0)
+		  return;
+
+	for (i = 0; i < itemCount; i++) {
+		for (x = 0; x < lstTables.options.length; x++) {
+			if (lstTables.options[x].selected) {
+				lstTables.removeChild(lstTables.options.item(x))
+			}
+		}
+	}
+
+	updateTables();
+
+	if (lstTables.options.length==0){
+		cmdNext.disabled=true;
+	}
+	
+}
+
+function updateTables(){
+	selectedTables.value = "";
+	for (var x = 0; x <= ((lstTables.options.length)-1); x++)
+	{
+		selectedTables.value = selectedTables.value + lstTables.options[x].value + "~";
+	}
+}
+
+function cmdNew_onClick() {
+	var tmpVal= confirm("Confirme a Ação");
+	
+	if (tmpVal== true){
+		window.open("newReport.php","_self");
+	} 
+}
+
+function jumpURL(tmpURL) {	
+	window.location.href = tmpURL;
+}
+</script>
+    
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">Selecione a(s) tabela(s) que compõem este relatório</h3>
+          </div> <!-- /.card-body -->
+          <div class="card-body">
+                          
+                          
+                <?php if($_SESSION['txtReportName']!="") {
+                    echo "<h2>Edição: ".$_SESSION['txtReportName']."</h2>";
+                }
+                else{
+                    echo "<h2>Novo Relatório</h2>";
+                }
+                ?>
+                
+           <div class="row">
+           <div class="col-md-5">
+                              Lista de tabelas disponíveis
+                          <select name="lstAllTables" size="10" multiple id="lstAllTables" class='form-control'>
+                    <?php
+					do { 
+						if ($dbVisTables!=""){
+							$visTables =  split(",",$dbVisTables);
+							for ($x=0; $x<=count($visTables)-1; $x+=1) {
+								if ($row_recGetTables[0]==trim($visTables[$x])) {
+					?>
+                          <option value="<?php echo "`".$row_recGetTables[0]."`" ?>"><?php echo $row_recGetTables[0]?></option>
+                          <?php
+								}
+							}
+						}else{
+					?>
+                          <option value="<?php echo "`".$row_recGetTables[0]."`" ?>"><?php echo $row_recGetTables[0]?></option>
+                          <?php
+						}
+					} while ($row_recGetTables = mysql_fetch_array($recGetTables));
+					$rows = mysql_num_rows($recGetTables);
+				  	if($rows > 0) {
+						mysql_data_seek($recGetTables, 0);
+						$row_recGetTables = mysql_fetch_array($recGetTables);
+					}
+					?>
+                      </select>
+                      
+           </div>
+           <div class="col-md-2 card-body text-center">
+                
+                      <a href="javascript:cmdSelectTables_onclick();" class="btn btn-sm btn-primary m-2"><i class="fas fa-arrow-right"></i></a><br>
+                      <a href="javascript:cmdRemoveTables_onclick();" class="btn btn-sm btn-primary"><i class="fas fa-arrow-left"></i></a>
+                      
+           </div>
+           <div class="col-md-5">
+                      Tabelas selecionadas
+                      <select name="lstTables" size="10" multiple id="lstTables" class='form-control'>
+                        <?php
+							$tmpTables = split("~",$_SESSION['selectedTables']);
+							for ($x=0; $x<=count($tmpTables)-1; $x+=1) {
+								if ($tmpTables[$x]!=""){
+						?>
+                        <option value="<?php echo $tmpTables[$x];?>"> <?php echo $tmpTables[$x];?> </option>
+                        <?php
+								}
+	  						}
+	  					?>
+                      </select>
+                      
+                      </div>
+                      </div>
+                      <br>
+                      
+                      <form action="selectFields.php" method="post" name="frmTables" id="frmTables">
+                      
+                       <div class="margin">
+                      <button name="cmdNew" type="button" class="btn btn-info" id="cmdNew" onclick="cmdNew_onClick();"><i class="fas fa-file"></i> Reiniciar como novo relatório</button>
+                      <button name="cmdBack" type="button" class="btn btn-success m-2" id="cmdBack" onclick="jumpURL('index.php');"><i class="fas fa-arrow-left"></i> Voltar</button>
+                      <button name="cmdNext" type="submit" class="btn btn-success" id="cmdNext" <?php if($_SESSION['selectedTables']==""){ echo ("disabled='disabled'"); } ?>>Avançar <i class="fas fa-arrow-right"></i></button>
+                      </div>
+                      <input name="selectedTables" type="hidden" id="selectedTables" value="<?Php echo($_SESSION['selectedTables']);?>">
+                      
+                      </form>
+                     
+                       
+            </div>
+        </div>
+    </div>
+</section>
+                      
+<?php
+include('design2.php');
+mysql_free_result($recGetTables);
+?>

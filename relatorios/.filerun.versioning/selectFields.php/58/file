@@ -1,0 +1,293 @@
+<?php
+session_start();
+if ($_POST["selectedTables"]!=""){
+	$_SESSION['selectedTables'] = $_POST["selectedTables"]; 
+}
+$design_titulo = "Relatórios";
+$design_ativo = "r3"; // coloca o class="nav-link active" no menu correto
+$design_migalha1_texto = "";
+$design_migalha1_link = "";
+$design_migalha2_texto = "";
+$design_migalha2_link = "";
+
+
+?>
+<?php require_once('includes/config.php');
+include("design1.php");
+?>
+<script language="javascript" type="text/javascript" src="ajaxlib.js"></script>
+<script language="javascript" type="text/javascript">
+var lstSelectedFields;
+var lstAllFields;
+var cmdNext;
+var selectedFields;
+var dispFields;
+var lstTables;
+
+function initVars() {
+	lstSelectedFields = document.getElementById("lstSelectedFields");
+	lstAllFields = document.getElementById("lstAllFields");
+	selectedFields = document.getElementById("selectedFields");
+	cmdNext = document.getElementById("cmdNext");
+	dispFields = document.getElementById("dispFields");
+	lstTables = document.getElementById("lstTables");
+	
+	doAjax('getFieldNames.php','tableName=' + lstTables.options[0].value,'displayFields','post',0,'progress');
+}
+
+function cmdSelectFields_onclick() {
+
+	initVars();
+	
+   	var addIndex = lstAllFields.selectedIndex;
+   	if(addIndex < 0)
+      return;
+
+	for (i = 0; i < lstAllFields.options.length; i++) {
+		if (lstAllFields.options[i].selected) {
+		
+			var tmpFound = 0;
+			for (var x = 0; x <= ((lstSelectedFields.options.length)-1); x++)
+			{
+				if (lstSelectedFields.options[x].value == lstAllFields.options[i].value) {
+					tmpFound = 1;
+				}
+			}
+			
+			if (tmpFound!=1){
+				newOption = document.createElement('option');
+				newText = document.createTextNode(lstAllFields.options[i].value);
+				
+				newOption.appendChild(newText);
+				newOption.setAttribute("value",lstAllFields.options[i].value);
+			
+				lstSelectedFields.appendChild(newOption);
+				
+				updateFields();
+				cmdNext.disabled=false;
+			}
+		}
+	}
+}
+
+function cmdRemoveFields_onclick() {
+
+	var selIndex = lstSelectedFields.selectedIndex;
+	var itemCount = lstSelectedFields.options.length;
+	if(selIndex < 0)
+    	return;
+    
+	for (i = 0; i < itemCount; i++) {
+	
+		for (x = 0; x < lstSelectedFields.options.length; x++) {
+			if (lstSelectedFields.options[x].selected) {
+				lstSelectedFields.removeChild(lstSelectedFields.options.item(x))
+			}
+		}
+	}
+
+	updateFields();
+
+	if (lstSelectedFields.options.length==0){
+		cmdNext.disabled=true;
+	}
+
+}
+
+function updateFields(){
+
+	selectedFields.value = "";
+	for (var x = 0; x <= ((lstSelectedFields.options.length)-1); x++)
+	{
+		selectedFields.value = selectedFields.value + lstSelectedFields.options[x].value + "~";
+	}
+}
+
+function displayFields(fieldData){
+	dispFields.innerHTML = fieldData;
+}
+
+function moveUpList() {
+
+   if ( lstSelectedFields.length == -1) {  
+      alert("Não existem itens para mover!");
+   } else {
+      var selected = lstSelectedFields.selectedIndex;
+      if (selected == -1) {
+         alert("Você deve selecionar um item para mover!");
+      } else {  
+         if ( lstSelectedFields.length == 0 ) {  
+            alert("Só há uma entrada!\nEla permanecerá no mesmo lugar.");
+         } else {  
+            if ( selected == 0 ) {
+               alert("O primeiro item da lista não pode ser movido para cima.");
+            } else {
+               var moveText1 = lstSelectedFields[selected-1].text;
+               var moveText2 = lstSelectedFields[selected].text;
+               var moveValue1 = lstSelectedFields[selected-1].value;
+               var moveValue2 = lstSelectedFields[selected].value;
+               lstSelectedFields[selected].text = moveText1;
+               lstSelectedFields[selected].value = moveValue1;
+               lstSelectedFields[selected-1].text = moveText2;
+               lstSelectedFields[selected-1].value = moveValue2;
+               lstSelectedFields.selectedIndex = selected-1; 
+			   updateFields();
+
+            }  
+         }  
+      }  
+   }  
+}
+
+function moveDownList() {
+
+   if ( lstSelectedFields.length == -1) {
+      alert("Não existem itens para mover!");
+   } else {
+      var selected = lstSelectedFields.selectedIndex;
+      if (selected == -1) {
+         alert("Você deve selecionar um item para mover!");
+      } else {
+         if ( lstSelectedFields.length == 0 ) {
+            alert("Só há uma entrada!\nEla permanecerá no mesmo lugar.");
+         } else {
+            if ( selected == lstSelectedFields.length-1 ) {
+               alert("O último item da lista não pode ser movido para baixo.");
+            } else {
+               var moveText1 = lstSelectedFields[selected+1].text;
+               var moveText2 = lstSelectedFields[selected].text;
+               var moveValue1 = lstSelectedFields[selected+1].value;
+               var moveValue2 = lstSelectedFields[selected].value;
+               lstSelectedFields[selected].text = moveText1;
+               lstSelectedFields[selected].value = moveValue1;
+               lstSelectedFields[selected+1].text = moveText2;
+               lstSelectedFields[selected+1].value = moveValue2;
+               lstSelectedFields.selectedIndex = selected+1;
+			   updateFields();
+            }
+         } 
+      }
+   }
+}
+
+function jumpURL(tmpURL) {	
+	window.location.href = tmpURL;
+}
+
+function cmdNew_onClick() {
+	var tmpVal= confirm("Confirme a Ação");
+	
+	if (tmpVal== true){
+		window.open("newReport.php","_self");
+	} 
+}
+initVars();
+</script>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card card-primary card-outline">
+          <div class="card-header">
+            <h3 class="card-title">Seleção de Colunas do formulário (Formato: tabela.coluna)</h3>
+          </div> <!-- /.card-body -->
+
+          <div class="card-body">
+
+                <?php if($_SESSION['txtReportName']!="") {
+                    echo "<h2>Edição: ".$_SESSION['txtReportName']."</h2>";
+                }
+                else{
+                    echo "<h2>Novo Relatório</h2>";
+                }
+                ?>
+       
+           <div class="row">
+           <div class="col-md-2">
+              <b>Tabelas:</b>
+			  <select name="lstTables" id="lstTables" class='form-control' onChange="doAjax('getFieldNames.php','tableName=' + this.value,'displayFields','post',0,'progress');">
+                <?php
+					$tmpTables = split("~",$_SESSION['selectedTables']);
+					for ($x=0; $x<=count($tmpTables)-1; $x+=1) {
+						if ($tmpTables[$x]!=""){
+				?>
+                <option value="<?php echo $tmpTables[$x];?>" <?php if ((count($tmpTables)-1)==1){ print "selected='selected'";} ?>> <?php echo $tmpTables[$x];?> </option>
+                <?php
+	  					}
+	  				}
+	  			?>
+              </select>
+              
+            
+                
+           </div>
+           <div class="col-md-10">
+              
+                <b>Colunas disponíveis:</b>
+              <div id="dispFields"></div>
+
+                <b>Colunas escolhidas:</b>
+                <div class="row">
+                <div class="col-md-10">
+               
+                  <select name="lstSelectedFields" size="5" multiple="multiple" id="lstSelectedFields" class='form-control'>
+					<?php
+						$tmpFields = split("~",$_SESSION['selectedFields']);
+						for ($x=0; $x<=count($tmpFields)-1; $x+=1) {
+							if ($tmpFields[$x]!=""){
+	  				?>
+                        <option value="<?php echo $tmpFields[$x];?>">
+                        <?php echo $tmpFields[$x];?>
+                        </option>
+					<?php
+	  						}
+	  					}
+					?>
+                   </select>
+                   
+                   
+                </div>
+                <div class="col-md-2">
+                    
+                            <!--<input name="cmdUp" type="image" id="cmdUp" src="images/go-up.png" onclick="moveUpList(lstSelectedFields);">-->
+                            <!--<input name="cmdDown" type="image" id="cmdDown" src="images/go-down.png" onclick="moveDownList(lstSelectedFields);">-->
+                            <!--<input name="cmdDown" type="image" id="cmdRemoveFields" src="images/delete.png" onclick="cmdRemoveFields_onclick();">-->
+                            
+                            <a href="javascript:moveUpList(lstSelectedFields);" class="btn btn-xs btn-primary"><i class="fas fa-arrow-up"></i></a>
+                            <a href="javascript:moveDownList(lstSelectedFields);" class="btn btn-xs btn-primary"><i class="fas fa-arrow-down"></i></a>
+                            <a href="javascript:cmdRemoveFields_onclick();" class="btn btn-xs btn-danger"><i class="fas fa-trash-alt"></i></a>
+                            
+                            <!--<input name="cmdRemoveFields" type="submit" class="button" id="cmdRemoveFields" onclick="cmdRemoveFields_onclick();" value="Remover campos" />-->
+                    
+                </div>
+                </div>
+                    
+            </div></div>
+                    
+                            
+                            <br>
+                      <!--<form action="selectFields.php" method="post" name="frmTables" id="frmTables">-->
+                              
+                  <!--</form>-->
+                  <form id="frmFields" name="frmFields" method="post" action="setConditions.php">
+                          <div class="margin">
+                  <button name="cmdNew" type="button" class="btn btn-info" id="cmdNew" onclick="cmdNew_onClick();"><i class="fas fa-file"></i> Reiniciar como novo relatório</button>
+                  <button name="cmdBack" type="button" class="btn btn-success  m-2" id="cmdBack" onclick="jumpURL('selectTables.php');"><i class="fas fa-arrow-left"></i> Voltar</button>
+                  <button name="cmdNext" type="submit" class="btn btn-success" id="cmdNext" <?php if($_SESSION['selectedFields']==""){ echo ("disabled='disabled'"); } ?>>Avançar <i class="fas fa-arrow-right"></i></button>
+                 
+                 </div>
+                 
+                    <input name="selectedFields" type="hidden" id="selectedFields" value="<?Php echo($_SESSION['selectedFields']);?>" />
+                  
+              </form>
+                   
+                   
+                   
+                   
+                   </div>             
+            </div>
+        </div>
+    </div>
+</section>
+<?php include("design2.php"); ?>
+
