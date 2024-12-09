@@ -14,21 +14,55 @@ if (!isset($_SESSION['id'])) {
 // Verificar se a chave is_admin está definida na sessão
 $isAdmin = isset($_SESSION['is_admin']) ? $_SESSION['is_admin'] : false;
 
+
 if (isset($_GET['codigo'])) {
-  $codigo = $_GET['codigo'];
+  $codigo = $_GET['codigo'];  // Código da mulher
   $usuarioId = $_SESSION['id'];
 
   // Consultar o criador do atendimento
-  $consultaPermissao = $MySQLi->query("SELECT ate_tec_codigo1 FROM tb_atendimentos WHERE ate_mul_codigo = $codigo");
-  $resultadoPermissao = $consultaPermissao->fetch_assoc();
+  $consultaCriador = $MySQLi->query("
+      SELECT ate_tec_codigo1
+      FROM tb_atendimentos
+      WHERE ate_mul_codigo = $codigo
+  ");
+  $resultadoCriador = $consultaCriador->fetch_assoc();
 
-  // Verificar se o usuário é o criador do atendimento ou administrador
-  if ($resultadoPermissao['ate_tec_codigo1'] != $usuarioId && !$isAdmin) {
-    // Se não for o criador nem administrador, redireciona ou exibe uma mensagem de erro
-    header("Location: sem-permissao.php"); // Redireciona para uma página de acesso negado
+  // Consultar técnicos autorizados com base no mul_codigo
+  $consultaPermissao = $MySQLi->query("
+      SELECT tec_codigo
+      FROM tb_tecnicos_mulheres
+      WHERE mul_codigo = $codigo  -- Relacionamento com a mulher
+  ");
+
+  // Definir a autorização: administrador tem permissão
+  $isAuthorized = $isAdmin;
+
+  // Verificar se o usuário é o criador ou um técnico autorizado
+  if ($resultadoCriador['ate_tec_codigo1'] == $usuarioId) {
+    $isAuthorized = true; // O usuário é o criador
+  } else {
+    // Verificar se o usuário é um dos técnicos autorizados
+    while ($resultadoPermissao = $consultaPermissao->fetch_assoc()) {
+      if ($resultadoPermissao['tec_codigo'] == $usuarioId) {
+        $isAuthorized = true;
+        break;  // Encontramos o técnico autorizado, não precisa continuar a busca
+      }
+    }
+  }
+
+  // Se não for autorizado, redireciona para página de erro
+  if (!$isAuthorized) {
+    header("Location: sem-permissao.php");
     exit();
   }
+
+  // Registrar visualização, já que o usuário tem permissão
+  $MySQLi->query("
+      INSERT INTO tb_visualizacoes (vis_mul_codigo, vis_tec_codigo)
+      VALUES ($codigo, $usuarioId)
+  ");
 }
+
 
 // Variáveis para definição antes de incluir o design1.php class="nav-link active"
 
@@ -165,7 +199,7 @@ $consulta8 = $MySQLi->query("SELECT ate_codigo, date_format(ate_data,'%d/%m/%Y %
 <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
 <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-<script src="plugins/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/k7vhbf0ybiy0bsqxhlfwwfww6zcohn8dz5eo1rg71vgdzsx3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 <script src="arovim/arovim.js"></script>
 <script type="text/javascript">
   tinymce.init({
@@ -278,6 +312,9 @@ $consulta8 = $MySQLi->query("SELECT ate_codigo, date_format(ate_data,'%d/%m/%Y %
               <li class="nav-item"><a class="nav-link <?php if ($aba == "anexos")
                 echo "active"; ?>" href="#anexos" data-toggle="tab" id="anexos-tab" onclick="alternarAba('anexos')"
                   class="btn btn-success">Anexos</a></li>
+              <li class="nav-item"><a class="nav-link <?php if ($aba == "anexos")
+                echo "active"; ?>" href="#permissao" data-toggle="tab" id="permissao-tab"
+                  onclick="alternarAba('permissao')" class="btn btn-success">Permissão</a></li>
             </ul>
           </div><!-- /.card-header -->
 
@@ -2707,6 +2744,80 @@ $consulta8 = $MySQLi->query("SELECT ate_codigo, date_format(ate_data,'%d/%m/%Y %
                   </div>
                 </form>
               </div>
+              <div class="tab-pane" id="permissao">
+                <div class="card">
+                  <div class="card-header">
+                    <label for="filter-tecnicos" class="form-label">Filtrar Técnicos:</label>
+                    <input type="text" id="filter-tecnicos" class="form-control mb-3"
+                      placeholder="Digite o nome do técnico para filtrar" onkeyup="filtrarTecnicos()">
+                  </div>
+                  <div class="card-body">
+                  <div class="card-header">
+                  <label for="tecnicos" class="form-label">Selecione Técnicos:</label>
+                  </div>
+                    <div class="row">
+                      <div class="col-12">
+                        <form method="POST" action="salvar_atendimento.php">
+                          <select name="tecnicos[]" id="tecnicos" class="form-select col-12" aria-label="Seleção de técnicos"
+                            multiple>
+                            <?php
+                            // Recuperar o código da mulher
+                            $codigo = $_GET['codigo'];
+
+                            // Recuperar o ID do criador da mulher
+                            $criadorQuery = $MySQLi->query("
+                SELECT mul_tec_codigo 
+                FROM tb_mulheres 
+                WHERE mul_codigo = $codigo
+              ");
+                            $criador = $criadorQuery->fetch_assoc()['mul_tec_codigo'];
+
+                            // Consultar os técnicos já associados ao atendimento da mulher
+                            $tecnicosAssociados = $MySQLi->query("
+                SELECT tec_codigo
+                FROM tb_tecnicos_mulheres
+                WHERE mul_codigo = $codigo
+              ");
+
+                            // Criar um array com os IDs dos técnicos já associados
+                            $tecnicosAssociadosArray = [];
+                            while ($tec = $tecnicosAssociados->fetch_assoc()) {
+                              $tecnicosAssociadosArray[] = $tec['tec_codigo'];
+                            }
+
+                            // Recuperar os técnicos disponíveis para serem adicionados
+                            $tecnicos = $MySQLi->query("SELECT tec_codigo, tec_nome FROM tb_tecnicos");
+
+                            // Iterar sobre os técnicos e exibir apenas os que ainda não foram associados e não são o criador
+                            while ($tecnico = $tecnicos->fetch_assoc()) {
+                              if (!in_array($tecnico['tec_codigo'], $tecnicosAssociadosArray) && $tecnico['tec_codigo'] != $criador) {
+                                echo "<option value='{$tecnico['tec_codigo']}'>{$tecnico['tec_nome']}</option>";
+                              }
+                            }
+                            ?>
+                          </select>
+                          <input type="hidden" name="codigo" value="<?= $codigo ?>"> <!-- Código da mulher -->
+                          <button type="submit" class="btn btn-primary mt-3 col-12">Salvar</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <script>
+                // Função para filtrar técnicos pelo nome
+                function filtrarTecnicos() {
+                  const input = document.getElementById('filter-tecnicos').value.toLowerCase();
+                  const options = document.getElementById('tecnicos').options;
+
+                  for (let i = 0; i < options.length; i++) {
+                    const tecnico = options[i].text.toLowerCase();
+                    options[i].style.display = tecnico.includes(input) ? '' : 'none';
+                  }
+                }
+              </script>
+
               <div class="tab-pane" id="anexos">
 
                 <hr>
