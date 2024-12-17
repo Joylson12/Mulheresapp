@@ -25,16 +25,10 @@ $nolidas = $naolidas ? $naolidas->fetch_assoc() : ['nolidas' => 0];
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <link rel="icon" type="image/png" href="../imagens/logomc.png" sizes="310x310">
   <meta name="google-signin-client_id" content="seu-google-client-id">
-  <style>
-    .main-sidebar {
-      height: 100%;
-      /* Garante que a sidebar ocupe 100% da altura */
-    }
-  </style>
 </head>
 </head>
 
-<body class="hold-transition sidebar-mini" onLoad="initVars();">
+<body class="hold-transition sidebar-mini layout-fixed">
   <div class="wrapper">
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -104,7 +98,7 @@ $nolidas = $naolidas ? $naolidas->fetch_assoc() : ['nolidas' => 0];
             alt="User Image" onClick="window.location='configuracoes.php'">
         </div>
         <div class="info">
-          <a href="configuracoes.php" class="d-block"><?php echo $_SESSION['nome']; ?></a>
+          <a href="../configuracoes.php" class="d-block"><?php echo $_SESSION['nome']; ?></a>
         </div>
       </div>
 
