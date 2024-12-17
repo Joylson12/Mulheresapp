@@ -107,20 +107,22 @@ if (isset($_GET['codigo'])) {
 } else
   header("Location: abrigo.php");
 
-if (isset($_POST['relatorio'])) {
-  $abrigamento = $_POST['abrigamento'];
-  $tecnico = $_SESSION['id'];
-  $relatorio = $_POST['relatorio'];
-  $data = $_POST['data'];
-  if ($relatorio == '') {
-    header("Location: ?codigo=$abrigamento&msg=1");
-  } else {
-    $consulta2 = $MySQLi->query("INSERT INTO tb_acompanhamento_abrigamentos (aco_relatorio, aco_tec_codigo, aco_abr_codigo, aco_data)
-                                    VALUES ('" . addslashes($relatorio) . "', $tecnico, $abrigamento, '$data')");
-    header("Location: ?codigo=$abrigamento");
-  }
+  if (isset($_POST['relatorio'])) {
+    $abrigamento = $_POST['abrigamento'];
+    $tecnico = $_SESSION['id'];
+    $relatorio = strip_tags($_POST['relatorio']); // Remove tags HTML como <p> e <br>
+    $data = $_POST['data'];
 
+    if ($relatorio == '') {
+        header("Location: ?codigo=$abrigamento&msg=1");
+    } else {
+        // Inserindo no banco de dados
+        $consulta2 = $MySQLi->query("INSERT INTO tb_acompanhamento_abrigamentos (aco_relatorio, aco_tec_codigo, aco_abr_codigo, aco_data)
+                                     VALUES ('" . addslashes($relatorio) . "', $tecnico, $abrigamento, '$data')");
+        header("Location: ?codigo=$abrigamento");
+    }
 }
+
 
 if (isset($_GET['msg']))
   $msg = $_GET['msg'];
@@ -213,23 +215,6 @@ $tecnico = $_SESSION['id'];
                   <!-- END timeline item -->
                   <?php $anterior = day($resultado2['aco_data']); ?>
                 <?php } else { ?>
-                  <!-- timeline item -->
-                  <div>
-                    <i class="fas fa-list bg-yellow"></i>
-                    <div class="timeline-item">
-                      <span class="time"><i class="fas fa-clock"></i> <?php echo tempo($resultado2['aco_data']) ?></span>
-                      <h3 class="timeline-header"><a href="#"><?php echo $resultado2['tec_apelido'] ?></a> adicionou um
-                        acompanhamento <?php if ($resultado2['aco_tec_codigo'] == $tecnico) { ?><a
-                            onclick="modal('<?php echo data($resultado2['aco_data']) ?>', <?php echo $resultado2['aco_codigo'] ?>)"
-                            data-toggle="modal" data-target="#modal-confirmar" href="#"><small>[excluir]</small></a><?php } ?>
-                      </h3>
-
-                      <div class="timeline-body">
-                        <?php echo $resultado2['aco_relatorio'] ?>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- END timeline item -->
                 <?php } ?>
               <?php } ?>
 
