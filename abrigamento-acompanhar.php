@@ -14,31 +14,37 @@ $design_migalha2_link = "";
 ?>
 <?php
 if (isset($_GET['export_excel'])) {
-    header("Content-Type: application/vnd.ms-excel");
-    header("Content-Disposition: attachment; filename=acompanhamento.xls");
-    echo "<table border='1'>";
-    echo "<tr>
-            <th>Data</th>
-            <th>Técnico</th>
-            <th>Relatório</th>
-          </tr>";
-    // Substitua pelo seu código para buscar dados do banco
-    $consulta2 = $MySQLi->query("SELECT aco_data, tec_apelido, aco_relatorio 
+  header("Content-Type: application/vnd.ms-excel");
+  header("Content-Disposition: attachment; filename=acompanhamento.xls");
+  echo "<table border='1'>";
+  echo "<tr>
+          <th>Data</th>
+          <th>Técnico</th>
+          <th>Relatório</th>
+        </tr>";
+
+  // Supondo que o código do abrigo é passado na URL como 'codigo'
+  $codigo = $_GET['codigo']; // Pegando o código do abrigo da URL
+
+  // Alterando a consulta para filtrar pelo código do abrigo
+  $consulta2 = $MySQLi->query("SELECT aco_data, tec_apelido, aco_relatorio 
                                 FROM tb_acompanhamento_abrigamentos 
-                                JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo");
-    while ($linha = $consulta2->fetch_assoc()) {
-        echo "<tr>
-                <td>" . date("d/m/Y H:i", strtotime($linha['aco_data'])) . "</td>
-                <td>" . htmlspecialchars($linha['tec_apelido']) . "</td>
-                <td>" . htmlspecialchars($linha['aco_relatorio']) . "</td>
-              </tr>";
-    }
-    echo "</table>";
-    exit();
+                                JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo
+                                WHERE aco_abr_codigo = '$codigo'"); // Filtrando pelo código do abrigo
+
+  while ($linha = $consulta2->fetch_assoc()) {
+    echo "<tr>
+            <td>" . date("d/m/Y H:i", strtotime($linha['aco_data'])) . "</td>
+            <td>" . htmlspecialchars($linha['tec_apelido']) . "</td>
+            <td>" . htmlspecialchars($linha['aco_relatorio']) . "</td>
+          </tr>";
+  }
+  echo "</table>";
+  exit();
 }
 
-require('fpdf.php');
 
+require('fpdf.php');
 if (isset($_GET['export_pdf'])) {
   $pdf = new FPDF();
   $pdf->AddPage();
@@ -49,15 +55,21 @@ if (isset($_GET['export_pdf'])) {
   $pdf->Cell(50, 10, 'Tecnico', 1);
   $pdf->Cell(90, 10, 'Relatorio', 1);
   $pdf->Ln();
-  // Consultando os dados para PDF
+
+  // Pegando o código do abrigo da URL
+  $codigo = $_GET['codigo']; // Código do abrigo
+
+  // Alterando a consulta para filtrar pelo código do abrigo
   $consulta2 = $MySQLi->query("SELECT aco_data, tec_apelido, aco_relatorio 
-                              FROM tb_acompanhamento_abrigamentos 
-                              JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo");
+                                FROM tb_acompanhamento_abrigamentos 
+                                JOIN tb_tecnicos ON aco_tec_codigo = tec_codigo
+                                WHERE aco_abr_codigo = '$codigo'"); // Filtrando pelo código do abrigo
+
   while ($linha = $consulta2->fetch_assoc()) {
-      $pdf->Cell(50, 10, date("d/m/Y H:i", strtotime($linha['aco_data'])), 1);
-      $pdf->Cell(50, 10, $linha['tec_apelido'], 1);
-      $pdf->Cell(90, 10, $linha['aco_relatorio'], 1);
-      $pdf->Ln();
+    $pdf->Cell(50, 10, date("d/m/Y H:i", strtotime($linha['aco_data'])), 1);
+    $pdf->Cell(50, 10, $linha['tec_apelido'], 1);
+    $pdf->Cell(90, 10, $linha['aco_relatorio'], 1);
+    $pdf->Ln();
   }
   $pdf->Output('D', 'acompanhamento.pdf'); // Força o download
   exit();
@@ -107,20 +119,20 @@ if (isset($_GET['codigo'])) {
 } else
   header("Location: abrigo.php");
 
-  if (isset($_POST['relatorio'])) {
-    $abrigamento = $_POST['abrigamento'];
-    $tecnico = $_SESSION['id'];
-    $relatorio = strip_tags($_POST['relatorio']); // Remove tags HTML como <p> e <br>
-    $data = $_POST['data'];
+if (isset($_POST['relatorio'])) {
+  $abrigamento = $_POST['abrigamento'];
+  $tecnico = $_SESSION['id'];
+  $relatorio = strip_tags($_POST['relatorio']); // Remove tags HTML como <p> e <br>
+  $data = $_POST['data'];
 
-    if ($relatorio == '') {
-        header("Location: ?codigo=$abrigamento&msg=1");
-    } else {
-        // Inserindo no banco de dados
-        $consulta2 = $MySQLi->query("INSERT INTO tb_acompanhamento_abrigamentos (aco_relatorio, aco_tec_codigo, aco_abr_codigo, aco_data)
+  if ($relatorio == '') {
+    header("Location: ?codigo=$abrigamento&msg=1");
+  } else {
+    // Inserindo no banco de dados
+    $consulta2 = $MySQLi->query("INSERT INTO tb_acompanhamento_abrigamentos (aco_relatorio, aco_tec_codigo, aco_abr_codigo, aco_data)
                                      VALUES ('" . addslashes($relatorio) . "', $tecnico, $abrigamento, '$data')");
-        header("Location: ?codigo=$abrigamento");
-    }
+    header("Location: ?codigo=$abrigamento");
+  }
 }
 
 
@@ -303,8 +315,8 @@ $tecnico = $_SESSION['id'];
                 ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
               });
             </script>
-            <a href="?export_excel=true" class="btn btn-success">Exportar para Excel</a>
-            <a href="?export_pdf=true" class="btn btn-success">Exportar para PDF</a>
+            <a href="?export_excel=true&codigo=<?php echo $codigo; ?>" class="btn btn-success">Exportar para Excel</a>
+            <a href="?export_pdf=true&codigo=<?php echo $codigo; ?>" class="btn btn-success">Exportar para PDF</a>
           </div>
           <!-- /.col -->
         </div>
@@ -362,7 +374,8 @@ include("design2.php");
   });
 </script>
 <!-- Include TinyMCE from CDN -->
-<script src="https://cdn.tiny.cloud/1/k7vhbf0ybiy0bsqxhlfwwfww6zcohn8dz5eo1rg71vgdzsx3/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/k7vhbf0ybiy0bsqxhlfwwfww6zcohn8dz5eo1rg71vgdzsx3/tinymce/7/tinymce.min.js"
+  referrerpolicy="origin"></script>
 <script>
   tinymce.init({
     selector: '#mytextarea', // Change this to the ID of your textarea
