@@ -184,7 +184,7 @@ include("design1.php");
 						</table>
 						<br>
 						<button name="cmdBack" type="button" class="btn btn-success m-2" id="cmdBack"
-							onclick="javascript:window.location.href ='setConditions.php'"><i
+							onclick="javascript:window.location.href ='selectTables.php'"><i
 								class="fas fa-arrow-left"></i>
 							Editar</button>
 						<button name="cmdDelete" type="button" class="btn btn-danger m-2" id="cmdDelete"
