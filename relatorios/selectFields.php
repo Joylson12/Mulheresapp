@@ -209,18 +209,21 @@ include("design1.php");
                 <div class="container-fluid">
                     <div class="card card-primary card-outline">
                         <div class="card-header">
-                            <h3 class="card-title">Seleção de Colunas do formulário (Formato: tabela.coluna)</h3>
+                            <h3 class="card-title">Seleção de Colunas do formulário</h3>
                         </div> <!-- /.card-header -->
 
                         <div class="card-body">
                             <h2>Nome do Relatório:</h2>
-                            <input type="text" name="txtReportName" id="txtReportName" class="form-control" placeholder="Digite o nome do relatório" value="<?php echo htmlspecialchars($_SESSION['txtReportName'], ENT_QUOTES); ?>" />
+                            <input type="text" name="txtReportName" id="txtReportName" class="form-control"
+                                placeholder="Digite o nome do relatório"
+                                value="<?php echo htmlspecialchars($_SESSION['txtReportName'], ENT_QUOTES); ?>" />
 
                             <!-- Campo oculto para selectedFields -->
-                            <input type="hidden" id="selectedFields" name="selectedFields" value="<?php echo htmlspecialchars($_SESSION['selectedFields'], ENT_QUOTES); ?>" />
+                            <input type="hidden" id="selectedFields" name="selectedFields"
+                                value="<?php echo htmlspecialchars($_SESSION['selectedFields'], ENT_QUOTES); ?>" />
 
                             <div class="row">
-                                <div class="col-md-2 col-12">
+                                <div class="col-md-2">
                                     <b>Tabelas:</b>
                                     <select name="lstTables" id="lstTables" class='form-control'
                                         onChange="doAjax('getFieldNames.php','tableName=' + encodeURIComponent(this.value),'displayFields','post',0,'progress');">
@@ -234,7 +237,7 @@ include("design1.php");
                                         ?>
                                     </select>
                                 </div>
-                                <div class="col-md-10 col-12">
+                                <div class="col-5">
                                     <b>Campos Disponíveis:</b>
                                     <div id="dispFields">
                                         <select id="lstAllFields" multiple class="form-control" style="height: 250px;">
@@ -242,20 +245,9 @@ include("design1.php");
                                         </select>
                                     </div>
                                 </div>
-                            </div> <!-- /.row -->
-                            
-                            <br />
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <button type="button" onclick="cmdSelectFields_onclick();" class="btn btn-success">Adicionar Campos</button>
-                                    <button type="button" onclick="cmdRemoveFields_onclick();" class="btn btn-danger">Remover Campos</button>
-                                </div>
-                            </div>
-                            <br />
-                            <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-5">
                                     <b>Campos Selecionados:</b>
-                                    <select id="lstSelectedFields" multiple class="form-control" style="height: 250px;">
+                                    <select id="lstSelectedFields" size="10" multiple class="form-control">
                                         <?php
                                         $selectedFieldsArray = explode("~", $_SESSION['selectedFields']);
                                         foreach ($selectedFieldsArray as $field) {
@@ -265,19 +257,37 @@ include("design1.php");
                                         }
                                         ?>
                                     </select>
+                                    <button type="button" onclick="cmdRemoveFields_onclick();"
+                                        class="btn btn-block bg-gradient-primary">Remover Campos</button>
+                                </div>
+
+                            </div> <!-- /.row -->
+
+                            <br />
+                            <div class="row">
+                                <div class="col-md-4">
                                 </div>
                             </div>
                             <br />
                             <div class="row">
+
+                            </div>
+                            <br />
+                            <div class="row">
                                 <div class="col-md-4">
-                                    <button type="button" onclick="moveUpList();" class="btn btn-warning">Mover para Cima</button>
-                                    <button type="button" onclick="moveDownList();" class="btn btn-warning">Mover para Baixo</button>
+                                    <button type="button" onclick="moveUpList();" class="btn btn-warning">Mover para
+                                        Cima</button>
+                                    <button type="button" onclick="moveDownList();" class="btn btn-warning">Mover para
+                                        Baixo</button>
                                 </div>
                             </div>
                         </div> <!-- /.card-body -->
-                        <div class="card-footer">
-                            <input type="submit" name="reiniciar" value="Reiniciar" class="btn btn-secondary" />
-                            <input type="submit" id="cmdNext" name="cmdNext" value="Próximo" class="btn btn-primary" disabled />
+                        <div class="card-footer row">
+                            <div class="col-11"></div>
+                            <div class="col-1">
+                                <input type="submit" id="cmdNext" name="cmdNext" value="Próximo" class="btn btn-primary"
+                                    disabled />
+                            </div>
                         </div>
                     </div> <!-- /.card -->
                 </div> <!-- /.container-fluid -->
