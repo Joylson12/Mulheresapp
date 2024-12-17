@@ -154,47 +154,53 @@ include("design1.php");
 <link rel="stylesheet" href="../plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
 
 <div class="wrapper">
-    <!-- Main content -->
-    <div class="content-wrapper">
-        <section class="content">
-            <div class="container-fluid">
-                <div class="card card-primary card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title"><?php echo $_SESSION['txtReportName']; ?></h3>
-                    </div>
-                    <div class="card-body">
-                        <?php
-                        print("<TABLE class='table table-hover table-bordered dataTable dtr-inline no-footer' id='relatorio' role='grid'><thead> \n");
-                        print("<TR ALIGN=LEFT VALIGN=TOP>");
-                        for ($column_num = 0; $column_num < $column_count; $column_num++) {
-                            $field_name = $recSQL->fetch_field_direct($column_num)->name;
-                            print("<TD class='tableHeader'><b>$field_name</b></TD>");
-                        }
-                        print("</TR></thead><tbody>\n");
+	<!-- Main content -->
+	<div class="content-wrapper">
+		<section class="content">
+			<div class="container-fluid">
+				<div class="card card-primary card-outline">
+					<div class="card-header">
+						<h3 class="card-title"><?php echo $_SESSION['txtReportName']; ?></h3>
+					</div>
+					<div class="card-body">
+						<?php
+						print ("<TABLE class='table table-hover table-bordered dataTable dtr-inline no-footer' id='relatorio' role='grid'><thead> \n");
+						print ("<TR ALIGN=LEFT VALIGN=TOP>");
+						for ($column_num = 0; $column_num < $column_count; $column_num++) {
+							$field_name = $recSQL->fetch_field_direct($column_num)->name;
+							print ("<TD class='tableHeader'><b>$field_name</b></TD>");
+						}
+						print ("</TR></thead><tbody>\n");
 
-                        while ($row = $recSQL->fetch_row()) {
-                            print("<TR ALIGN=LEFT VALIGN=TOP>");
-                            foreach ($row as $cell) {
-                                print("<TD>" . ($cell != "" ? $cell : "&nbsp;") . "</TD>\n");
-                            }
-                            print("</TR>\n");
-                        }
-                        ?>
-                        </tbody>
-                        </table>
-                        <br>
-                        <button name="cmdBack" type="button" class="btn btn-success m-2" id="cmdBack"
-                            onclick="javascript:window.location.href ='setConditions.php'"><i class="fas fa-arrow-left"></i>
-                            Editar</button>
-                        <button name="cmdExport" type="button" class="btn btn-warning" id="cmdExport"
-                            onclick="javascript:window.location.href ='export.php'">
-                            <i class="nav-icon fas fa-file-excel"></i> Exportar para Excel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
+						while ($row = $recSQL->fetch_row()) {
+							print ("<TR ALIGN=LEFT VALIGN=TOP>");
+							foreach ($row as $cell) {
+								print ("<TD>" . ($cell != "" ? $cell : "&nbsp;") . "</TD>\n");
+							}
+							print ("</TR>\n");
+						}
+						?>
+						</tbody>
+						</table>
+						<br>
+						<button name="cmdBack" type="button" class="btn btn-success m-2" id="cmdBack"
+							onclick="javascript:window.location.href ='setConditions.php'"><i
+								class="fas fa-arrow-left"></i>
+							Editar</button>
+						<button name="cmdDelete" type="button" class="btn btn-danger m-2" id="cmdDelete"
+							onclick="javascript:window.location.href ='deleteReport.php'">
+							<i class="nav-icon fas fa-trash-alt"></i> Apagar Relatório
+						</button>
+
+						<button name="cmdExport" type="button" class="btn btn-warning" id="cmdExport"
+							onclick="javascript:window.location.href ='export.php'">
+							<i class="nav-icon fas fa-file-excel"></i> Exportar para Excel
+						</button>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
 </div>
 
 
